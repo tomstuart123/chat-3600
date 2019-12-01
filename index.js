@@ -18,18 +18,17 @@ export default class chat_3600 extends React.Component {
       userName: '',
       messageDetail: [],
       userArray: [],
+      userInput: [],
     }
   }
 
   componentDidMount = () => {
-    console.log('firebase run')
     const chatrooms = firebase.database().ref('chatrooms');
  
     chatrooms.on('value', (chatroom) => {
       const chatrooms = chatroom.val();
       const chatroomPush = chatrooms['publicRoom'];
       let messageArray = [];
-      console.log('run')
       for (let message in chatroomPush) {
         messageArray.push(chatroomPush[message])
       }      
@@ -37,7 +36,7 @@ export default class chat_3600 extends React.Component {
 
       this.setState({
         messageList: messageArray,
-        userName: '3jsUser1',
+        userName: '',
         
       })
 
@@ -45,8 +44,93 @@ export default class chat_3600 extends React.Component {
     })
   }
 
+  handleChange = (e) => {
+    const inputEvent = e.nativeEvent.inputEvent;
+    // if not a click
+    let cleanLetter = [];
+    let currentWord = this.state.userInput
+    console.log(inputEvent.button)
+    // use - as a backspace
+    if (inputEvent.button === 32) {
+      cleanLetter.unshift('-')
+    }
+    else if (inputEvent.button === 13) {
+      cleanLetter.push('')
+    }
+
+    else if (inputEvent.button === 8) {
+      cleanLetter.push('')
+    }
+
+    else if (inputEvent.button > 0) {
+      cleanLetter.unshift(String.fromCharCode(inputEvent.button))
+    } else {
+      cleanLetter.push('')
+    }
+
+    // get rid of double press as keyboard goes up and down
+    if (inputEvent.action === 'down') {
+      if (inputEvent.button === 8) {
+        currentWord.pop()
+        this.setState({
+          userInput: currentWord,
+        })
+      } else if (inputEvent.button === 13) {
+        this.handleSubmit();
+        
+      } else {
+        currentWord.push(cleanLetter[0])
+        this.setState({
+          userInput: currentWord,
+        })
+      }
+      
+      
+    }
+    
+    
+    
+  }
+
+  handleSubmit = (e) => {
+    // clean the userInput ready to upload to firebase
+    let splitUserInput = this.state.userInput.join();
+    const splitUserInputAgain = splitUserInput.replace(/,/g, '');
+    console.log(splitUserInputAgain);
+    const chatrooms = firebase.database().ref('chatrooms');
+    const enqueuedMessage = splitUserInputAgain;
+    const currentTime = Date(Date.now()).toString();
+    const user = 'vr-user'
+    
+    const messageObject = {
+      userID: 'vr-user',
+      userMessage: enqueuedMessage,
+      currentTime: currentTime,
+      userFirebaseKey: '',
+    }
+
+
+    if (enqueuedMessage) {
+      // store the pushID given to us from firebase
+      const pushID = chatrooms.child('publicRoom').push(messageObject);
+      // update the firebase key with variable pushID
+      messageObject.userFirebaseKey = pushID.key;
+      chatrooms.child('publicRoom').child(pushID.key).update(messageObject);
+
+      this.setState({
+        userInput: [],
+      })
+    }
+
+
+
+
+  }
+
   render() {
+    console.log(this.state.userInput)
       return (
+
       <View style={styles.panel}>
         <View style={styles.greetingBox}>
           <Text style={styles.greeting}>
@@ -55,15 +139,27 @@ export default class chat_3600 extends React.Component {
           {
           this.state.messageList.map((message) => {
             return (
-              <Text style={styles.greeting}>{`${message.userID}`}: {`${message.userMessage}`}</Text>
+              <Text style={styles.greeting2}>{`${message.userID}`}: {`${message.userMessage}`}
+              </Text>
             )
           })
           }
           
         </View>
-        <VrButton>
-          <Text>+</Text>
-        </VrButton>
+          <View style={styles.greetingBox2} onInput={this.handleChange}>
+            {
+              
+              this.state.userInput.map((item) => {
+                return (
+                  <Text style={styles.inputText}>{item}</Text>
+                )
+              })
+            }
+
+          </View>
+          <VrButton style={styles.submitButton} value='submitButton' onClick={this.handleSubmit}>
+            <Text>Submit Message</Text>
+          </VrButton>
       </View>
     );
   }
@@ -86,9 +182,33 @@ const styles = StyleSheet.create({
     width: 800,
     height: 400,
   },
+  greetingBox2: {
+    padding: 20,
+    backgroundColor: '#000000',
+    borderColor: '#639dda',
+    borderWidth: 2,
+    width: 800,
+    height: 100,
+    flexDirection: 'row',
+    justifyContent: 'flex-end', 
+  },
   greeting: {
     fontSize: 30,
   },
+  greeting2: {
+    fontSize: 20,
+  },
+  submitButton: {
+    borderColor: '#639dda',
+    borderWidth: 2,
+    padding: 20,
+    width: 800,
+    height: 50,
+  },
+  
+  // inputText: {
+  //   display: 'in-line',
+  // },
 });
 
 AppRegistry.registerComponent('chat_3600', () => chat_3600);
