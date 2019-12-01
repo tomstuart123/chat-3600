@@ -5,13 +5,10 @@
   "private": true,
   "scripts": {
     "start": "node node_modules/react-360/scripts/packager.js",
-    "build": "react-scripts build",
     "bundle": "node node_modules/react-360/scripts/bundle.js && sh node_modules/react-360/scripts/copy_assets.sh",
     "open": "node -e \"require('xopen')('http://localhost:8081/index.html')\"",
     "devtools": "react-devtools",
     "test": "jest",
-    "eject": "react-scripts eject",
-    "predeploy": "npm run build",
     "deploy": "node node_modules/react-360/scripts/deploy.js"
   },
   "dependencies": {
