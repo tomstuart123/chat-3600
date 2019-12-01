@@ -1,16 +1,20 @@
 {
-  "homepage": "https: //tomstuart123.github.io/chat-3600",
+  "homepage": "https://tomstuart123.github.io/chat-3600",
   "name": "chat_3600",
   "version": "0.0.1",
   "private": true,
   "scripts": {
     "start": "node node_modules/react-360/scripts/packager.js",
+    "build": "react-scripts build",
     "bundle": "node node_modules/react-360/scripts/bundle.js",
+    "bundle": "node node_modules/react-360/scripts/bundle.js && sh node_modules/react-360/scripts/copy_assets.sh",
     "open": "node -e \"require('xopen')('http://localhost:8081/index.html')\"",
     "devtools": "react-devtools",
     "test": "jest",
+    "eject": "react-scripts eject",
+    
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "deploy": "node node_modules/react-360/scripts/deploy.js"
 
   },
   "dependencies": {
